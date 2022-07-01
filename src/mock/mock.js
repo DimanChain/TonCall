@@ -1,4 +1,6 @@
-export const relationType = [
+
+
+export const RelationTypeMock = [
     {
         name: "peer to peer", value: 1,
         categories: [
