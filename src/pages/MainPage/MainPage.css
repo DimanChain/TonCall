@@ -20,3 +20,33 @@
 .categoryContainer{
 
 }
+
+.eventsList{
+
+}
+
+.cardLogo{
+    height: 100px;
+    width: 100px;
+    object-fit: cover;
+    border: 2px solid #179bdd;
+}
+
+.eventsCard{
+    background-color: #FFFFFF ;
+    border-radius: 10px;
+    box-shadow: 0px 0px 13px 2px #9d9999;
+    width: 180px;
+    height: 280px;
+}
+.eventsCard-upper{
+    height: 100px;
+    background-color: #179CDE ;
+
+}
+
+.eventsCard-downer{
+    align-items: center;
+
+}
+

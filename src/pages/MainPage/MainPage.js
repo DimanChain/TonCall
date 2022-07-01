@@ -1,5 +1,5 @@
 import authorProfile from '../../assets/profile-author.jpg'
-import { Button, styled, Switch } from '@mui/material'
+import { Button, Rating, styled, Switch } from '@mui/material'
 import './MainPage.css'
 import { useEffect, useState } from "react";
 import { RelationTypeMock } from "../../mock/mock";
@@ -66,6 +66,22 @@ function MainPage() {
                             return <Button className={"m-2"} variant={"outlined"} key={catIndx}>{catVal.name}</Button>
                         })}
                     </div>
+                </div>
+                <div className={"eventsList d-flex flex-row flex-wrap"}>
+                    {relationCategories.map((catVal, catIndx) => {
+                        return (
+                            <div className={"eventsCard m-3 overflow-hidden"} key={catIndx}>
+                                <div className={"d-flex flex-row justify-content-center eventsCard-upper"}>
+                                    <img className={"m-4 text-light rounded-circle cardLogo"} src={catVal.image} />
+                                </div>
+                                <div className={"d-flex flex-column justify-content-center eventsCard-downer pt-5"}>
+                                    <span className={"fw-bold"}>{catVal.title}</span>
+                                    <Rating value={catVal.rating} disabled />
+                                    <span>Fee : {catVal.fee} per second</span>
+                                    <Button className={"m-2"} variant={"contained"}>Start Channel</Button>
+                                </div>
+                            </div>)
+                    })}
                 </div>
             </div>
         </>
