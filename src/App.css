@@ -2,7 +2,7 @@
   text-align: center;
   display: flex;
   flex-direction: row;
-  background-color: #FFFFFF;
+  background-color: #c4c4c4;
   height: 100vh;
 }
 
@@ -17,7 +17,9 @@
   }
 }
 
-
+.generalBtn {
+  background-color:#179CDE ;
+}
 
 .App-link {
   color: #61dafb;
