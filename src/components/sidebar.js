@@ -1,11 +1,11 @@
-
 import authorProfile from '../assets/profile-author.jpg'
-import { Button, Box, Modal } from '@mui/material'
-import { useEffect, useState, } from "react";
+import {Button, Box, Modal} from '@mui/material'
+import {useDispatch, useSelector} from "react-redux";
+import {useEffect, useState,} from "react";
 import * as tonMnemonic from "tonweb-mnemonic";
 import classes from "./sidebar.module.css";
 import TonWeb from 'tonweb';
-import { Link } from 'react-router-dom';
+import { setUserInfo } from "../redux/AppInfoSlice";
 var mnemonicWords;
 
 function Sidebar() {
@@ -15,6 +15,9 @@ function Sidebar() {
     const [modalState, setModalState] = useState(0)
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+
+    const dispatch = useDispatch();
+    const {publicKey, secretKey, walletAddress, balance} = useSelector((s) => s.appInfo);
 
     const walletConnect = async (event) => {
         try {
@@ -26,7 +29,7 @@ function Sidebar() {
 
             window.ton
                 .send("ton_rawSign", [
-                    { data: "Welcome to TonCall this is just a simple test for signing your wallet" },
+                    {data: "Welcome to TonCall this is just a simple test for signing your wallet"},
                 ], () => {
 
                 });
@@ -38,13 +41,13 @@ function Sidebar() {
     }
 
 
-
     //----------------------------------------------------------------
     async function createWallet() {
         mnemonicWords = await tonMnemonic.generateMnemonic();
         setModalState(1);
         handleOpen();
     }
+
     //----------------------------------------------------------------
     async function confirmWallet() {
         await tonMnemonic.validateMnemonic(mnemonicWords);
@@ -58,14 +61,21 @@ function Sidebar() {
 
         const keyPair = await tonMnemonic.mnemonicToKeyPair(mnemonicWords);
         // -> {publicKey: Uint8Array(32), secretKey: Uint8Array(64)}
+        dispatch(setUserInfo({
+            publicKey: toHexString(keyPair.publicKey),
+            secretKey: toHexString(keyPair.secretKey),
+            walletAddress: toHexString((await wallet.getAddress()).hashPart),
+            balance : 10
+        }));
         localStorage.setItem("publicKey", toHexString(keyPair.publicKey));
         localStorage.setItem("secretKey", toHexString(keyPair.secretKey));
         const tonweb = new TonWeb();
-        const wallet = await tonweb.wallet.create({ publicKey: keyPair.publicKey });
+        const wallet = await tonweb.wallet.create({publicKey: keyPair.publicKey});
         localStorage.setItem("walletAddress", toHexString((await wallet.getAddress()).hashPart));
 
         handleClose();
     }
+
     function toHexString(byteArray) {
         return Array.prototype.map.call(byteArray, function (byte) {
             return ('0' + (byte & 0xFF).toString(16)).slice(-2);
@@ -96,7 +106,7 @@ function Sidebar() {
                 </p>
                 <div>
                     <Button className={"m-2 text-light border-light generalBtn"} onClick={confirmWallet}
-                        variant={"contained"}>Confirm and Create Wallet</Button>
+                            variant={"contained"}>Confirm and Create Wallet</Button>
                 </div>
             </div>)
     }
@@ -117,9 +127,6 @@ function Sidebar() {
         }, 100)
     }, []);
 
-
-    let walletAddress = localStorage.getItem("walletAddress");
-
     return (
         <>
             <div className={classes.sideBarContainer}>
@@ -127,21 +134,28 @@ function Sidebar() {
                 {
                     localStorage.getItem("secretKey") ?
                         <>
-                            <img className={"p-4 text-light rounded-circle"} src={authorProfile} />
-                            <a onClick={() => { navigator.clipboard.writeText(walletAddress) }} className={"text-light fw-bold "}>{walletAddress.substring(0, 4) + "...." + walletAddress.substring(walletAddress.length - 4, walletAddress.length)}</a>
+                            <img className={"p-4 text-light rounded-circle"} src={authorProfile}/>
+                            <a onClick={() => {
+                                navigator.clipboard.writeText(walletAddress)
+                            }}
+                               className={"text-light fw-bold "}>{walletAddress.substring(0, 4) + "...." + walletAddress.substring(walletAddress.length - 4, walletAddress.length)}</a>
                             <Button className={"m-2 text-light border-light generalBtn"} onClick={walletConnect}
-                                variant={"contained"}>{walletState == 0 ? "Connect wallet" : walletState == 1 ? "Wallet Connected" : "Install Ton Wallet"}</Button>
-                            <Button className={"m-2 text-light border-light"} variant={"outlined"} onClick={handleOpen}>Deposite</Button>
+                                    variant={"contained"}>{walletState == 0 ? "Connect wallet" : walletState == 1 ? "Wallet Connected" : "Install Ton Wallet"}</Button>
+                            <Button className={"m-2 text-light border-light"} variant={"outlined"}
+                                    onClick={handleOpen}>Deposite</Button>
                         </> :
                         <div className={"m-2 mt-5 text-light border-light"}>
                             <span className={"text-light fw-bold "}>To use our platform and connect to other user you have to create a wallet or import one</span>
                             <Button className={"m-2 text-light border-light generalBtn"} onClick={createWallet}
-                                variant={"contained"}>Create Wallet</Button>
-                            <Button className={"m-2 text-light border-light"} variant={"outlined"} onClick={handleOpen}>Import Wallet</Button>
+                                    variant={"contained"}>Create Wallet</Button>
+                            <Button className={"m-2 text-light border-light"} variant={"outlined"} onClick={handleOpen}>Import
+                                Wallet</Button>
                         </div>
                 }
                 <div className={"d-flex flex-column justify-content-end flex-grow-1 "}>
-                    {!localStorage.getItem("publicKey") ? <div></div> : <Button className={"m-2 mb-3"} color={"error"} variant={"contained"} onClick={logout}>log out</Button>}
+                    {!publicKey ? <div></div> :
+                        <Button className={"m-2 mb-3"} color={"error"} variant={"contained"} onClick={logout}>log
+                            out</Button>}
 
                 </div>
             </div>
@@ -157,7 +171,7 @@ function Sidebar() {
                             <>
                                 <div>HI</div>
                                 <Button className={"m-2 text-light border-light generalBtn"} onClick={createWallet}
-                                    variant={"contained"}>Create Wallet</Button>
+                                        variant={"contained"}>Create Wallet</Button>
                             </>
                     }
 
