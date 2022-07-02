@@ -129,13 +129,33 @@ function ChatPage() {
                                 return (
                                     <div
                                         className={classes.messageWrapper + ' mt-0 ' + (messageValue.isClient ? 'justify-content-end' : 'justify-content-start')}>
-                                        <Box
-                                            className={classes.message + ' m-3 mt-0 p-3  ' + (messageValue.isClient ? classes.clientMessages : classes.serverMessages)}
-                                            key={messageIndex}>
-                                            <div>{messageValue.owner}</div>
-                                            <div>{body}</div>
-                                            <div>{moment(createdAt).format("HH:mm:ss")}</div>
-                                        </Box>
+                                        {messageValue.isClient ?
+                                            <>
+
+                                                <Box
+                                                    className={classes.message + ' m-3 mt-0 p-3  ' + classes.clientMessages}
+                                                    key={messageIndex}>
+                                                    <div>{messageValue.owner}</div>
+                                                    <div>{body}</div>
+                                                    <div>{moment(createdAt).format("HH:mm:ss")}</div>
+                                                </Box>
+                                                <img src={client.image}
+                                                     className={classes.profile}/>
+                                            </>
+                                            :
+                                            <>
+                                                <img src={server.image}
+                                                     className={classes.profile}/>
+                                                <Box
+                                                    className={classes.message + ' m-3 mt-0 p-3  ' + classes.serverMessages}
+                                                    key={messageIndex}>
+                                                    <div>{messageValue.owner}</div>
+                                                    <div>{body}</div>
+                                                    <div>{moment(createdAt).format("HH:mm:ss")}</div>
+                                                </Box>
+
+                                            </>}
+
                                     </div>
                                 )
                             })}
@@ -252,7 +272,7 @@ function ChatPage() {
                                                 type={"number"}
                                                 endAdornment={<span>minutes</span>}/>
                                             <span>initial amount to start channel :</span>
-                                            <span>fee {server.fee.chat} * {meetingDuration} * 60 = {(server.fee.chat * meetingDuration * 60).toFixed(2)}</span>
+                                            <span>fee {server.fee} * {meetingDuration} * 60 = {(server.fee * meetingDuration * 60).toFixed(2)}</span>
                                             <Button className={"m-2 text-light border-light generalBtn"}
                                                     onClick={clientRequestForChannel}
                                                     variant={"contained"}>confirm</Button>
@@ -283,8 +303,10 @@ function ChatPage() {
                 <div className={classes.confirmModal}>
                     <span>you spend {moment.duration(endTime.diff(startTime)).hours().toString().padStart(2, '0')
                         + ':' + moment.duration(endTime.diff(startTime)).minutes().toString().padStart(2, '0')
-                        + ':' + moment.duration(endTime.diff(startTime)).seconds().toString().padStart(2, '0')} and {(moment.duration(endTime.diff(startTime)).asSeconds() * server.fee.chat).toFixed(5)} token this time!</span>
-                    <Link to={"/mainPage"} className={"m-2 text-light border-light generalBtn p-2 text-center rounded-3"}>See you soon!</Link>
+                        + ':' + moment.duration(endTime.diff(startTime)).seconds().toString().padStart(2, '0')} and {(moment.duration(endTime.diff(startTime)).asSeconds() * server.fee).toFixed(5)} token this time!</span>
+                    <Link to={"/mainPage"}
+                          className={"m-2 text-light border-light generalBtn p-2 text-center rounded-3"}>See you
+                        soon!</Link>
                 </div>
             </Dialog>
         </>
