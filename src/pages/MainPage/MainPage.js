@@ -6,6 +6,7 @@ import './MainPage.css'
 import { useEffect, useState } from "react";
 import { RelationTypeMock } from "../../mock/mock";
 import Sidebar from '../../components/sidebar';
+import {Link} from "react-router-dom";
 function MainPage() {
 
     const [relationType, setRelationType] = useState(1)
@@ -65,8 +66,9 @@ function MainPage() {
                                             </IconButton>
                                         </div>
                                     </div>
-
-                                    <Button classes={{ text: "requestBtn" }} className={"m-2 requestBtn"} variant={"contained"}>Request Channel</Button>
+                                    <Link to={"/connect/" + catVal.value} >
+                                        <Button classes={{ text: "requestBtn" }} className={"m-2 requestBtn"} variant={"contained"}>Request Channel</Button>
+                                    </Link>
                                 </div>
                             </div>)
                     })}
