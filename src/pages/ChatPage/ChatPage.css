@@ -1,0 +1,69 @@
+.mainContainer{
+
+}
+
+.sideBarContainer{
+    width: 200px;
+    box-shadow: -1px -1px 13px 2px  #333333;
+    background-color: #333333;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    border-radius: 0 0 15px 0;
+    position: relative;
+    z-index: 10;
+}
+
+.appHeader{
+    height: 50px;
+}
+.categoryContainer{
+
+}
+
+.eventsList{
+
+}
+
+.cardLogo{
+    height: 100px;
+    width: 100px;
+    object-fit: cover;
+    border: 2px solid #179bdd;
+}
+
+.eventsCard{
+    background-color: #FFFFFF ;
+    border-radius: 10px;
+    box-shadow: 0px 0px 13px 2px #9d9999;
+    width: 220px;
+    height: 340px;
+}
+.eventsCard-upper{
+    height: 100px;
+    background-color: #179CDE ;
+
+}
+
+.eventsCard-downer{
+    align-items: center;
+}
+
+.feeText{
+    font-size: 12px;
+}
+
+.requestBtn{
+    font-size: 14px !important;
+}
+
+.modalStyle{
+    width: 450px;
+    height: 250px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #FFFFFF ;
+    border: 2px solid #000;
+}

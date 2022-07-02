@@ -20,6 +20,7 @@ function MainPage() {
     const handleChange = (event) => {
         setRelationType(event.target.checked ? 2 : 1);
     };
+    
 
     useEffect(() => {
         setRelationCategories(RelationTypeMock.filter(val => val.value === (relationType))[0].categories)
@@ -80,6 +81,7 @@ function MainPage() {
                 </div>
             </div>
             <Modal
+
                 open={open}
                 onClose={handleClose}
                 aria-labelledby="modal-modal-title"
