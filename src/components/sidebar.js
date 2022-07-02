@@ -1,11 +1,11 @@
 
 import authorProfile from '../assets/profile-author.jpg'
 import { Button, Box, Modal } from '@mui/material'
-import { useEffect, useState } from "react";
+import { useEffect, useState, } from "react";
 import * as tonMnemonic from "tonweb-mnemonic";
 import classes from "./sidebar.module.css";
-
-import useTonWeb from './useTonWeb';
+import TonWeb from 'tonweb';
+import { Link } from 'react-router-dom';
 var mnemonicWords;
 
 function Sidebar() {
@@ -60,12 +60,10 @@ function Sidebar() {
         // -> {publicKey: Uint8Array(32), secretKey: Uint8Array(64)}
         localStorage.setItem("publicKey", toHexString(keyPair.publicKey));
         localStorage.setItem("secretKey", toHexString(keyPair.secretKey));
-        // const tonweb = new TonWeb();
+        const tonweb = new TonWeb();
+        const wallet = await tonweb.wallet.create({ publicKey: keyPair.publicKey });
+        localStorage.setItem("walletAddress", toHexString((await wallet.getAddress()).hashPart));
 
-        // const wallet = tonweb.wallet.create({ publicKey: toHexString(keyPair.publicKey) });
-        // localStorage.setItem("walletAddress", wallet.getAddress());
-
-        // console.log(wallet.getAddress());
         handleClose();
     }
     function toHexString(byteArray) {
@@ -73,7 +71,6 @@ function Sidebar() {
             return ('0' + (byte & 0xFF).toString(16)).slice(-2);
         }).join('');
     }
-
 
     function createWalletBody() {
         let resp = [];
@@ -104,7 +101,12 @@ function Sidebar() {
             </div>)
     }
 
-
+    function logout() {
+        localStorage.removeItem("publicKey");
+        localStorage.removeItem("secretKey");
+        localStorage.removeItem("walletAddress");
+        setModalState(0);
+    }
 
     useEffect(() => {
         setTimeout(() => {
@@ -117,15 +119,17 @@ function Sidebar() {
     }, []);
 
 
+    let walletAddress = localStorage.getItem("walletAddress");
+
     return (
         <>
             <div className="sideBarContainer">
 
                 {
-                    localStorage.getItem("publicKey") ?
+                    localStorage.getItem("secretKey") ?
                         <>
                             <img className={"p-4 text-light rounded-circle"} src={authorProfile} />
-                            <span className={"text-light fw-bold "}>{localStorage.getItem("publicKey").substring(4) + "...." + localStorage.getItem("publicKey").substring(localStorage.getItem("publicKey").length - 4, 4)}</span>
+                            <a onClick={() => { navigator.clipboard.writeText(walletAddress) }} className={"text-light fw-bold "}>{walletAddress.substring(0, 4) + "...." + walletAddress.substring(walletAddress.length - 4, walletAddress.length)}</a>
                             <Button className={"m-2 text-light border-light generalBtn"} onClick={walletConnect}
                                 variant={"contained"}>{walletState == 0 ? "Connect wallet" : walletState == 1 ? "Wallet Connected" : "Install Ton Wallet"}</Button>
                             <Button className={"m-2 text-light border-light"} variant={"outlined"} onClick={handleOpen}>Deposite</Button>
@@ -138,7 +142,7 @@ function Sidebar() {
                         </div>
                 }
                 <div className={"d-flex flex-column justify-content-end flex-grow-1 "}>
-                    {!localStorage.getItem("publicKey") ? <div></div> : <Button className={"m-2 mb-3"} color={"error"} variant={"contained"}>log out</Button>}
+                    {!localStorage.getItem("publicKey") ? <div></div> : <Button className={"m-2 mb-3"} color={"error"} variant={"contained"} onClick={logout}>log out</Button>}
 
                 </div>
             </div>
