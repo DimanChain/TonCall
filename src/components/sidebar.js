@@ -122,7 +122,7 @@ function Sidebar() {
 
     return (
         <>
-            <div className="sideBarContainer">
+            <div className={classes.sideBarContainer}>
 
                 {
                     localStorage.getItem("secretKey") ?
