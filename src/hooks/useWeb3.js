@@ -4,17 +4,16 @@ import { setUserInfo } from "../redux/AppInfoSlice";
 import * as tonMnemonic from "tonweb-mnemonic";
 
 
+const providerUrl = 'https://testnet.toncenter.com/api/v2/jsonRPC'; // TON HTTP API url. Use this url for testnet
+const apiKey = '9d3e42ecad4110e05084be39b30cd6e1e30ea7c67777a8c2c434ba3fa29cd0b1'; // Obtain your API key in https://t.me/tontestnetapibot
+const tonweb = new TonWeb(new TonWeb.HttpProvider(providerUrl, { apiKey })); // Initialize TON SDK
 
 const BN = TonWeb.utils.BN;
 const toNano = TonWeb.utils.toNano;
+const fromNano = TonWeb.utils.fromNano;
 
-const providerUrl = 'https://testnet.toncenter.com/api/v2/jsonRPC';
-const apiKey = '9d3e42ecad4110e05084be39b30cd6e1e30ea7c67777a8c2c434ba3fa29cd0b1';
 const providerWallet = "EQDsaBYtU21bItJIrjsnj__aDkieetkhBLk986CxBkSQLbVt";
-const providerSecretKey = "458c43e3d5863573a93af2bfcca7c9cf240d601614962439418d90d9f68867e1c352f105765c26bee5c0bb8ff5804f950e58b0da761eb7a91bf9ba38c7bac0f9"
-const providerPublicKey = "c352f105765c26bee5c0bb8ff5804f950e58b0da761eb7a91bf9ba38c7bac0f9";
-const tonweb = new TonWeb(new TonWeb.HttpProvider(providerUrl, { apiKey }));
-
+const providerWords = "refuse rude cream index absent announce exile ready bean open sketch prepare isolate pair visual logic category spoil tomato flip lawn news asset any"
 
 function hexToBytes(hex) {
     for (var bytes = [], c = 0; c < hex.length; c += 2)
@@ -29,151 +28,198 @@ function toHexString(byteArray) {
 }
 
 const useWeb3 = () => {
-    const dispatch = useDispatch();
-    const { publicKey, secretKey, walletAddress, balance } = useSelector((s) => s.appInfo);
 
-    // const createProviderWallet = async () => {
-    //     let words = providerWords.split(' ');
-    //     await tonMnemonic.validateMnemonic(words);
-    //     await tonMnemonic.isPasswordNeeded(words);
-    //     await tonMnemonic.mnemonicToSeed(words);
-
-    //     const keyPair = await tonMnemonic.mnemonicToKeyPair(words);
-
-    //     console.log(keyPair);
-    // }
-    const createChannel = async (initBalance) => {
-
-        try {
-            const userWallet = tonweb.wallet.create({
-                publicKey: hexToBytes(publicKey)
-            });
-
-            const provWallet = tonweb.wallet.create({
-                publicKey: hexToBytes(providerPublicKey)
-            });
+    const getProviderKeyPair = async () => {
+        let words = providerWords.split(' ');
+        return await tonMnemonic.mnemonicToKeyPair(words);
+    }
+    const requestChannel = async (channelId) => {
 
 
-            const walletAddressA = await userWallet.getAddress(); // address of this wallet in blockchain
-            console.log('walletAddressA = ', walletAddressA.toString(true, true, true));
-            const walletAddressB = await provWallet.getAddress(); // address of this wallet in blockchain
-            console.log('walletAddressB = ', walletAddressB.toString(true, true, true));
+        const providerKeyPair = await getProviderKeyPair();
 
-            console.error(walletAddress);
+        const provWallet = tonweb.wallet.create({
+            publicKey: providerKeyPair.publicKey,
+        });
+        const provWalletAddress = await provWallet.getAddress();
+        const mnemonic = localStorage.getItem('mnemonic').split(' ');
 
-            const channelInitState = {
-                balanceA: toNano(initBalance.toString()),
-                balanceB: toNano('0'),
-                seqnoA: new BN(0),
-                seqnoB: new BN(0)
-            };
-            const channelConfig = {
-                channelId: new BN(424),
-                addressA: walletAddress,
-                addressB: providerWallet,
-                initBalanceA: channelInitState.balanceA,
-                initBalanceB: channelInitState.balanceB
-            }
+        const keyPair = await tonMnemonic.mnemonicToKeyPair(mnemonic);
+        console.log('keyPair: ', keyPair);
 
-            const channelA = await tonweb.payments.createChannel({
-                ...channelConfig,
-                isA: true,
-                myKeyPair: { publicKey: hexToBytes(publicKey), secretKey: hexToBytes(secretKey) },
-                hisPublicKey: hexToBytes(publicKey),
-            });
-            console.log(channelA);
-            const channelAddress = await channelA.getAddress(); // address of this payment channel smart-contract in blockchain
-            console.log('channelAddress=', channelAddress.toString(true, true, true));
+        const walletUser = tonweb.wallet.create({
+            publicKey: keyPair.publicKey
+        });
+        const walletUserAddress = await walletUser.getAddress(); // address of this wallet in blockchain
+        console.log('User Address = ', walletUserAddress.toString(true, true, true));
+        console.log('Prov Address = ', provWalletAddress.toString(true, true, true));
+        console.log('balance', await tonweb.getBalance(providerWallet));
 
-            // const channelB = await tonweb.payments.createChannel({
-            //     ...channelConfig,
-            //     isA: false,
-            //     myKeyPair: { publicKey: hexToBytes(providerPublicKey), secretKey: hexToBytes(providerSecretKey) },
-            //     hisPublicKey: hexToBytes(providerPublicKey),
-            // });
-            // if ((await channelB.getAddress()).toString() !== channelAddress.toString()) {
-            //     throw new Error('Channels address not same');
-            // }
+        // console.error(walletAddress);
 
 
-            // const fromWalletUser = channelA.fromWallet({
-            //     wallet: userWallet,
-            //     secretKey: hexToBytes(secretKey)
-            // });
+        const channelConfig = {
+            channelId: new BN(channelId),
+            addressA: walletUserAddress,
+            addressB: provWalletAddress,
+        }
 
-            // const fromWalletProvider = channelB.fromWallet({
-            //     wallet: provWallet,
-            //     secretKey: hexToBytes(providerSecretKey)
-            // });
-            // await fromWalletUser.deploy().send(toNano('0.05'));
+        const channelA = tonweb.payments.createChannel({
+            ...channelConfig,
+            isA: true,
+            myKeyPair: keyPair,
+            hisPublicKey: providerKeyPair.publicKey,
+        });
+        const channelAddress = await channelA.getAddress(); // address of this payment channel smart-contract in blockchain
+        console.log('channelAddress=', channelAddress.toString(true, true, true));
 
-            // console.log("ChannelA state ")
-            // console.log(await channelA.getChannelState());
-            // const data = await channelA.getData();
-            // console.log('balanceA = ', data.balanceA.toString())
-            // console.log('balanceB = ', data.balanceB.toString())
-
-            // await fromWalletUser
-            //     .topUp({ coinsA: channelInitState.balanceA, coinsB: new BN(0) })
-            //     .send(channelInitState.balanceA.add(toNano('0.05'))); // +0.05 TON to network fees
-
-            // await fromWalletUser.init(channelInitState).send(toNano('0.05'));
-            // const tempStep = 0.5;
-            // const channelState1 = {
-            //     balanceA: toNano((initBalance - tempStep).toString()),
-            //     balanceB: toNano(tempStep.toString()),
-            //     seqnoA: new BN(1),
-            //     seqnoB: new BN(0)
-            // };
-
-            // const signatureA1 = await channelA.signState(channelState1);
-            // if (!(await channelB.verifyState(channelState1, signatureA1))) {
-            //     throw new Error('Invalid A signature');
-            // }
-            // //const signatureB1 = await channelB.signState(channelState1);
-            // const channelState2 = {
-            //     balanceA: channelState1.balanceA - toNano((tempStep).toString()),
-            //     balanceB: channelState1.balanceA - toNano((tempStep.toString())),
-            //     seqnoA: new BN(2),
-            //     seqnoB: new BN(0)
-            // };
-            // // A signs this state and send signed state to B (e.g. via websocket)
-
-            // const signatureA2 = await channelA.signState(channelState2);
-
-            // // B checks that the state is changed according to the rules, signs this state, send signed state to A (e.g. via websocket)
-
-            // if (!(await channelB.verifyState(channelState2, signatureA2))) {
-            //     throw new Error('Invalid A signature');
-            // }
-
-            // const signatureCloseA = await channelA.signClose(channelState2);
-
-            // // A verifies and signs this closing message and include B's signature
-
-            // // A sends closing message to blockchain, payments channel smart contract
-            // // Payment channel smart contract will send funds to participants according to the balances of the sent state.
-
-            // if (!(await channelB.verifyClose(channelState2, signatureCloseA))) {
-            //     throw new Error('Invalid B signature');
-            // }
-
-            // await fromWalletUser.close({
-            //     ...channelState2,
-            //     hisSignature: signatureCloseA
-            // }).send(toNano('0.05'));
-        } catch (error) {
-            console.error(error);
+        const channelB = tonweb.payments.createChannel({
+            ...channelConfig,
+            isA: false,
+            myKeyPair: providerKeyPair,
+            hisPublicKey: keyPair.publicKey,
+        });
+        if ((await channelB.getAddress()).toString() !== channelAddress.toString()) {
+            throw new Error('Channels address not same');
         }
 
 
+        const fromWalletUser = channelA.fromWallet({
+            wallet: walletUser,
+            secretKey: keyPair.secretKey,
+        });
+
+        const fromWalletProvider = channelB.fromWallet({
+            wallet: provWallet,
+            secretKey: providerKeyPair.secretKey
+        });
+        await fromWalletUser.deploy().send(toNano('0.05'));
+        await checkChannelState(channelId);
+        console.log("DONE")
     };
 
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+    const checkChannelState = async function (channelId) {
+        const providerKeyPair = await getProviderKeyPair();
+
+        const provWallet = tonweb.wallet.create({
+            publicKey: providerKeyPair.publicKey,
+        });
+        const provWalletAddress = await provWallet.getAddress();
+        const mnemonic = localStorage.getItem('mnemonic').split(' ');
+
+        const keyPair = await tonMnemonic.mnemonicToKeyPair(mnemonic);
+
+        const walletUser = tonweb.wallet.create({
+            publicKey: keyPair.publicKey
+        });
+        const walletUserAddress = await walletUser.getAddress(); // address of this wallet in blockchain
+
+        const channelConfig = {
+            channelId: new BN(channelId),
+            addressA: walletUserAddress,
+            addressB: provWalletAddress,
+        }
+
+        const channelA = tonweb.payments.createChannel({
+            ...channelConfig,
+            isA: true,
+            myKeyPair: keyPair,
+            hisPublicKey: providerKeyPair.publicKey,
+        });
+        let val = -1;
+        for (let i = 0; i < 100; i++) {
+            await sleep(1000);
+            try {
+                val = await channelA.getChannelState()
+            } catch (error) {
+                val = -1;
+            }
+            console.log(val);
+            if (val > -1) break;
+
+        }
+        return val
 
 
 
+    }
 
-    return { createChannel, /* createProviderWallet */ };
+    const initBalances = async function (channelId, initBalance) {
+
+        // setTimeout(async () => {
+        // }, 3000);
+        // setTimeout(async () => {
+
+        //     console.log('test', fromNano(channelInitState.balanceA.add(toNano('0.05'))));
+        //     await fromWalletUser
+        //         .topUp({ coinsA: channelInitState.balanceA, coinsB: new BN(0) })
+        //         .send(channelInitState.balanceA.add(toNano('0.05'))); // +0.05 TON to network fees
+
+        //     // await fromWalletProvider
+        //     //     .topUp({ coinsA: new BN(0), coinsB: new BN(0) })
+        //     //     .send(new BN(0)); // +0.05 TON to network fees
+
+        //     await fromWalletUser.init(channelInitState).send(toNano('0.05'));
+        //     localStorage.setItem('channel' + channelId, initBalance);
+
+        //     console.log(await channelA.getChannelState());
+        //     const data2 = await channelA.getData();
+        //     console.log('balanceA = ', data2.balanceA.toString())
+        //     console.log('balanceB = ', data2.balanceB.toString())
+        // }, 5000);
+
+        // const tempStep = 0.5;
+        // const channelState1 = {
+        //     balanceA: toNano((initBalance - tempStep).toString()),
+        //     balanceB: toNano(tempStep.toString()),
+        //     seqnoA: new BN(1),
+        //     seqnoB: new BN(0)
+        // };
+
+        // const signatureA1 = await channelA.signState(channelState1);
+        // if (!(await channelB.verifyState(channelState1, signatureA1))) {
+        //     throw new Error('Invalid A signature');
+        // }
+        // //const signatureB1 = await channelB.signState(channelState1);
+        // const channelState2 = {
+        //     balanceA: channelState1.balanceA - toNano((tempStep).toString()),
+        //     balanceB: channelState1.balanceA - toNano((tempStep.toString())),
+        //     seqnoA: new BN(2),
+        //     seqnoB: new BN(0)
+        // };
+        // // A signs this state and send signed state to B (e.g. via websocket)
+
+        // const signatureA2 = await channelA.signState(channelState2);
+
+        // // B checks that the state is changed according to the rules, signs this state, send signed state to A (e.g. via websocket)
+
+        // if (!(await channelB.verifyState(channelState2, signatureA2))) {
+        //     throw new Error('Invalid A signature');
+        // }
+
+        // const signatureCloseA = await channelA.signClose(channelState2);
+
+        // // A verifies and signs this closing message and include B's signature
+
+        // // A sends closing message to blockchain, payments channel smart contract
+        // // Payment channel smart contract will send funds to participants according to the balances of the sent state.
+
+        // if (!(await channelB.verifyClose(channelState2, signatureCloseA))) {
+        //     throw new Error('Invalid B signature');
+        // }
+
+        // await fromWalletUser.close({
+        //     ...channelState2,
+        //     hisSignature: signatureCloseA
+        // }).send(toNano('0.05'));
+
+
+
+    }
+
+    return { requestChannel, getProviderKeyPair };
 };
 
 export default useWeb3;
