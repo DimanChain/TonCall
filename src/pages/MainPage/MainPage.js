@@ -36,28 +36,31 @@ function MainPage() {
                 <div className={"eventsList d-flex flex-row flex-wrap justify-content-center"}>
                     {relationCategories.map((catVal, catIndx) => {
                         return (
-                            <div className={"eventsCard m-4 overflow-hidden"} key={catIndx}>
+                            <div className={"eventsCard m-2 overflow-hidden"} key={catIndx}>
                                 <div className={"d-flex flex-row justify-content-center eventsCard-upper"}>
                                     <img className={"m-4 text-light rounded-circle cardLogo"} src={catVal.image} />
                                 </div>
                                 <div className={"d-flex flex-column justify-content-center eventsCard-downer pt-5"}>
-                                    <span className={"fw-bold"}>{catVal.title}</span>
+                                    <span className={"fw-bold d-block mb-2"}>{catVal.title}</span>
                                     <Rating value={catVal.rating} disabled />
-                                    <span>Fee per second</span>
-                                    <div className={"mt-2 d-flex flex-row justify-content-around w-75"}>
-                                        <IconButton aria-label="ChatIcon" color="primary" className={"d-flex flex-column"}>
-                                            < ChatIcon />
-                                            <span className={"feeText"}>{catVal.fee.chat}</span>
-                                        </IconButton>
-                                        <IconButton aria-label="KeyboardVoiceIcon" color="primary" className={"d-flex flex-column"}>
-                                            < KeyboardVoiceIcon />
-                                            <span className={"feeText"}>{catVal.fee.voice}</span>
-                                        </IconButton>
-                                        <IconButton aria-label="VideocamIcon" color="primary" className={"d-flex flex-column"}>
-                                            < VideocamIcon />
-                                            <span className={"feeText"}>{catVal.fee.video}</span>
-                                        </IconButton>
+                                    <div className={"d-flex flex-column justify-content-center align-items-center mt-4 alh_box_choose_state"}>
+                                        <span>Fee per second</span>
+                                        <div className={"mt-1 d-flex flex-row justify-content-around w-75"}>
+                                            <IconButton aria-label="ChatIcon" color="primary" className={"d-flex flex-column"}>
+                                                < ChatIcon />
+                                                <span className={"feeText"}>{catVal.fee.chat}</span>
+                                            </IconButton>
+                                            <IconButton aria-label="KeyboardVoiceIcon" color="primary" className={"d-flex flex-column"}>
+                                                < KeyboardVoiceIcon />
+                                                <span className={"feeText"}>{catVal.fee.voice}</span>
+                                            </IconButton>
+                                            <IconButton aria-label="VideocamIcon" color="primary" className={"d-flex flex-column"}>
+                                                < VideocamIcon />
+                                                <span className={"feeText"}>{catVal.fee.video}</span>
+                                            </IconButton>
+                                        </div>
                                     </div>
+
                                     <Button classes={{ text: "requestBtn" }} className={"m-2 requestBtn"} variant={"contained"}>Request Channel</Button>
                                 </div>
                             </div>)
