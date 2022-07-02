@@ -82,7 +82,8 @@ function MainPage() {
                                     <img className={"m-4 text-light rounded-circle cardLogo"} src={catVal.image} />
                                 </div>
                                 <div className={"d-flex flex-column justify-content-center eventsCard-downer pt-5"}>
-                                    <span className={"fw-bold d-block mb-2"}>{catVal.title}</span>
+                                    <span className={"fw-bold d-block"}>{catVal.title}</span>
+                                    <span className={"alh_desc d-block mb-2"}>{catVal.desc}</span>
                                     <Rating value={catVal.rating} disabled />
                                     <div className={"d-flex flex-column justify-content-center align-items-center mt-4 alh_box_choose_state"}>
                                         <span>Fee per second</span>

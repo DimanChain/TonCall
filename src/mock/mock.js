@@ -12,10 +12,10 @@ export const RelationTypeMock = [
     {
         name: "peer to peer", value: 1,
         categories: [
-            {name: "Psychology", value: 10, image: psychologyImg, title: "Dr.Wick", rating: 4, fee: {chat : 0.010 , voice : 0.013 , video : 0.12}},
-            {name: "Health Care", value: 11, image: healthImg, title: "Dr.Smith", rating: 3, fee: {chat : 0.010 , voice : 0.012 , video : 0.12}},
-            {name: "Veterinarian", value: 12, image: VeterinarianImg, title: "Dr.Terry", rating: 5, fee: {chat : 0.010 , voice : 0.012 , video : 0.12}},
-            {name: "trading advisor", value: 13, image: tradingImg, title: "Thomas Gerard", rating: 1, fee: {chat : 0.010 , voice : 0.012 , video : 0.12}},
+            {name: "Psychology", value: 10, image: psychologyImg, desc:"seyed ali habibi ", title: "Dr.Wick", rating: 4, fee: {chat : 0.010 , voice : 0.013 , video : 0.12}},
+            {name: "Health Care", value: 11, image: healthImg, desc:"seyed ali habibi ", title: "Dr.Smith", rating: 3, fee: {chat : 0.010 , voice : 0.012 , video : 0.12}},
+            {name: "Veterinarian", value: 12, image: VeterinarianImg, desc:"seyed ali habibi ", title: "Dr.Terry", rating: 5, fee: {chat : 0.010 , voice : 0.012 , video : 0.12}},
+            {name: "trading advisor", value: 13, image: tradingImg, desc:"seyed ali habibi ", title: "Thomas Gerard", rating: 1, fee: {chat : 0.010 , voice : 0.012 , video : 0.12}},
         ]
     }
     , {
