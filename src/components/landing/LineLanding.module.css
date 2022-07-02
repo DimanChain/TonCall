@@ -1,0 +1,7 @@
+.line{
+    height: 150px;
+    width: 1px;
+    margin: 18px auto;
+    display: block;
+    background-color: #203135;
+}
