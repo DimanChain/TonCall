@@ -27,7 +27,7 @@ function ChatPage() {
     }, [relationType])
 
     return (
-
+        <></>
     );
 }
 
