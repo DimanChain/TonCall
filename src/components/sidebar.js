@@ -18,7 +18,7 @@ function Sidebar() {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-    const { getBalance } = useWeb3();
+    const { createChannel } = useWeb3();
 
     const dispatch = useDispatch();
     const { publicKey, secretKey, walletAddress, balance } = useSelector((s) => s.appInfo);
@@ -128,7 +128,7 @@ function Sidebar() {
                 setWalletState(2);
             else
                 setWalletState(0);
-
+            //createProviderWallet();
             const tonweb = new TonWeb(new TonWeb.HttpProvider('https://testnet.toncenter.com/api/v2/jsonRPC', { apiKey: '9d3e42ecad4110e05084be39b30cd6e1e30ea7c67777a8c2c434ba3fa29cd0b1' }));
             if (localStorage.getItem("secretKey")) {
                 dispatch(setUserInfo({
@@ -165,6 +165,8 @@ function Sidebar() {
                             </div>
                             <Button className={"m-2 text-light border-light"} variant={"outlined"}
                                 onClick={handleOpen}>Deposite</Button>
+                            <Button className={"m-2 text-light border-light"} variant={"outlined"}
+                                onClick={() => createChannel(2)}>TEST</Button>
                         </> :
                         <div className={"m-2 mt-5 text-light border-light"}>
                             <span className={"text-light fw-bold "}>To use our platform and connect to other user you have to create a wallet or import one</span>
