@@ -1,0 +1,10 @@
+.h1{
+    font-family: 'Inter', sans-serif;
+    font-size: 50px;
+    font-weight: 800;
+    line-height: 93px;
+    letter-spacing: 0em;
+    text-align: center;
+    padding: 27px;
+    color: #203135;
+}
