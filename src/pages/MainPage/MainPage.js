@@ -12,6 +12,10 @@ function MainPage() {
     const [relationCategories, setRelationCategories] = useState([])
 
 
+    const handleChange = (event) => {
+        setRelationType(event.target.checked ? 2 : 1);
+    };
+
 
 
     useEffect(() => {
