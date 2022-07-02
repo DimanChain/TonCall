@@ -1,0 +1,17 @@
+import { createSlice } from "@reduxjs/toolkit";
+
+const AppInfoSlice = createSlice({
+  name: "appInfo",
+  initialState: {
+   publicKey: "",
+    balance : 10
+  },
+  reducers: {
+    setUserInfo(state, action) {
+      return action.payload;
+    },
+  },
+});
+
+export const { setUserInfo } = AppInfoSlice.actions;
+export default AppInfoSlice.reducer;

@@ -1,0 +1,146 @@
+.chatContainer {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0px 4px 10px -1px rgba(98, 95, 86, 0.05);
+}
+
+.chatHeader {
+    border-bottom: 1px solid #9d9999;
+    padding: 12px 30px;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    gap: 8px;
+    height: 100px;
+}
+
+.profileWrapper {
+    display: flex;
+}
+
+.profile {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 100px;
+
+}
+.profile img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.name {
+    display: flex;
+    align-items: center;
+}
+
+.messagesListContainer {
+    display: flex;
+    overflow: hidden;
+    flex-direction: row;
+    flex-grow: 1;
+}
+
+.messagesList {
+    overflow: hidden;
+    flex-direction: column;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0px;
+}
+
+.messageWrapper {
+    display: flex;
+    overflow: hidden;
+    flex-direction: row;
+}
+
+.messages {
+
+    padding: 12px 30px;
+    margin : 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-height: 100%;
+    overflow: auto;
+}
+
+.clientMessages {
+    border-radius: 20px 20px 0 20px;
+    background-color: #be9af6;
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+
+.serverMessages {
+    border-radius: 20px 20px 20px 0px;
+    background-color: #88add0;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.message {
+
+    display: flex;
+    flex-direction: column;
+}
+
+.server {
+    display: flex;
+    border-radius: 10px;
+    padding: 12px 14px 8px;
+    flex: 1;
+    flex-direction: column;
+    font-size: 13px;
+}
+.server  div:first-child {
+    font-weight: 600;
+}
+.server div:last-child {
+    text-align: end;
+    font-size: 12px;
+}
+
+.user {
+    display: flex;
+    border-radius: 10px;
+    padding: 12px 14px 8px;
+    flex: 1;
+    flex-direction: column;
+}
+
+.user  div:first-child {
+    font-weight: 600;
+}
+.user div:last-child {
+    text-align: end;
+    font-size: 12px;
+}
+
+.footer {
+    border-top: 1px solid #9d9999;
+    padding: 12px 30px;
+    border-radius: 0 0 15px 15px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 1;
+    height: 100px;
+}
+
+.input {
+    display: flex;
+    flex-grow: 1;
+}
+.input div {
+    padding: 13px 4px;
+}
+.disabled{
+    opacity: 0.5;
+}

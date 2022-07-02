@@ -114,7 +114,6 @@ function Sidebar() {
                 setWalletState(2);
             else
                 setWalletState(0);
-
         }, 100)
     }, []);
 
