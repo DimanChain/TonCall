@@ -5,30 +5,36 @@
     padding: 0;
     overflow: hidden;
     box-shadow: 0px 4px 10px -1px rgba(98, 95, 86, 0.05);
+    position: relative;
 }
 
 .chatHeader {
-    border-bottom: 1px solid #9d9999;
     padding: 12px 30px;
     border-radius: 15px 15px 0 0;
     display: flex;
     gap: 8px;
-    height: 100px;
+    height: 50px;
+    flex-direction: row;
+    width: 100%;
+    justify-content: flex-end;
 }
 
 .profileWrapper {
     display: flex;
+
 }
 
 .profile {
+    margin: 15px;
+    border-radius: 50px;
     width: 50px;
     height: 50px;
     display: flex;
+    flex-direction: row;
     align-items: center;
-    overflow: hidden;
-    border-radius: 100px;
-
+    justify-content: flex-end;
 }
+
 .profile img {
     max-width: 100%;
     max-height: 100%;
@@ -63,7 +69,7 @@
 .messages {
 
     padding: 12px 30px;
-    margin : 10px;
+    margin: 10px;
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -99,9 +105,11 @@
     flex-direction: column;
     font-size: 13px;
 }
-.server  div:first-child {
+
+.server div:first-child {
     font-weight: 600;
 }
+
 .server div:last-child {
     text-align: end;
     font-size: 12px;
@@ -115,9 +123,10 @@
     flex-direction: column;
 }
 
-.user  div:first-child {
+.user div:first-child {
     font-weight: 600;
 }
+
 .user div:last-child {
     text-align: end;
     font-size: 12px;
@@ -138,9 +147,80 @@
     display: flex;
     flex-grow: 1;
 }
+
 .input div {
     padding: 13px 4px;
 }
-.disabled{
+
+.disabled {
     opacity: 0.5;
+}
+
+.overlayContainer {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.overlayLeft {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    border-right: 2px solid rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.overlayLeft > div{
+    flex: 1;
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.overlayLeft > div > div:first-child{
+    position: absolute;
+}
+
+
+.overlayRight {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.overlayRight > div{
+    flex: 1;
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+.overlayRight > div > div:first-child{
+    position: absolute;
+}
+
+.gifStyle {
+    width: 200px;
+    height: 200px;
+}
+
+.confirmModal {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 30px;
+    background-color: #ffffff;
 }
