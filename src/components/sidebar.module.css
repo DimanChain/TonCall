@@ -1,6 +1,6 @@
 .modalStyle {
   width: 450px;
-  height: 250px;
+  height: 280px;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -9,6 +9,7 @@
   border: 2px solid #000;
   color: #ffff;
   padding: 30px 15px 15px;
+  word-break: break-all;
 }
 
 .sideBarContainer {
