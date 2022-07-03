@@ -1,5 +1,8 @@
 import TonWeb from 'tonweb';
+import { useDispatch, useSelector } from "react-redux";
+import { setUserInfo } from "../redux/AppInfoSlice";
 import * as tonMnemonic from "tonweb-mnemonic";
+import { ConstructionOutlined } from '@mui/icons-material';
 
 
 const providerUrl = 'https://testnet.toncenter.com/api/v2/jsonRPC'; // TON HTTP API url. Use this url for testnet
@@ -26,13 +29,15 @@ function toHexString(byteArray) {
 }
 
 const useWeb3 = () => {
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
     const getProviderKeyPair = async () => {
         let words = providerWords.split(' ');
         return await tonMnemonic.mnemonicToKeyPair(words);
     }
 
-    const requestChannel = async (channelId) => {
+    const _initChannel = async (channelId, initBalance) => {
+
         const providerKeyPair = await getProviderKeyPair();
 
         const provWallet = tonweb.wallet.create({
@@ -53,12 +58,19 @@ const useWeb3 = () => {
         console.log('balance', await tonweb.getBalance(providerWallet));
 
         // console.error(walletAddress);
-
+        const channelInitState = {
+            balanceA: toNano(initBalance.toString()), // A's initial balance in Toncoins. Next A will need to make a top-up for this amount
+            balanceB: toNano('0.01'), // B's initial balance in Toncoins. Next B will need to make a top-up for this amount
+            seqnoA: new BN(0), // initially 0
+            seqnoB: new BN(0)  // initially 0
+        };
 
         const channelConfig = {
             channelId: new BN(channelId),
             addressA: walletUserAddress,
             addressB: provWalletAddress,
+            initBalanceA: channelInitState.balanceA,
+            initBalanceB: channelInitState.balanceB
         }
 
         const channelA = tonweb.payments.createChannel({
@@ -90,12 +102,80 @@ const useWeb3 = () => {
             wallet: provWallet,
             secretKey: providerKeyPair.secretKey
         });
-        await fromWalletUser.deploy().send(toNano('0.05'));
-        await checkChannelState(channelId);
-        console.log("DONE")
+
+        return { keyPair, providerKeyPair, fromWalletUser, fromWalletProvider, walletUser, channelInitState, channelConfig, channelA, channelB }
+    }
+
+    const requestChannel = async (channelId, initBalance) => {
+        try {
+            let channels = await _initChannel(channelId, initBalance)
+            await channels.fromWalletUser.deploy().send(toNano('0.05'));
+            await checkChannelState(channelId);
+            localStorage.setItem('channelA' + channelId, toNano(initBalance.toString()));
+            localStorage.setItem('channelB' + channelId, toNano("0.01"));
+            localStorage.setItem('channelASeqno' + channelId, 0);
+            localStorage.setItem('channelBSeqno' + channelId, 0);
+
+            await channels.fromWalletUser
+                .topUp({ coinsA: channels.channelConfig.initBalanceA, coinsB: new BN(0) })
+                .send(channels.channelConfig.initBalanceA.add(toNano('0.05'))); // +0.05 TON to network fees
+
+
+            for (let i = 0; i < 100; i++) {
+                await sleep(1000);
+                try {
+                    const data = await channels.channelA.getData();
+                    console.log(data.balanceA.toString());
+                    if (data.balanceA.toString() == channels.channelConfig.initBalanceA.toString()) {
+                        console.log("BLANCE A IS OK")
+                        break;
+                    }
+                } catch (error) {
+                    continue;
+                }
+            }
+            await channels.fromWalletProvider
+                .topUp({ coinsA: new BN(0), coinsB: channels.channelConfig.initBalanceB })
+                .send(channels.channelConfig.initBalanceB.add(toNano('0.05'))); // +0.05 TON to network fees
+
+            for (let i = 0; i < 100; i++) {
+                await sleep(1000);
+                try {
+                    const data = await channels.channelB.getData();
+                    console.log(data.balanceB.toString());
+                    if (data.balanceB.toString() == channels.channelConfig.initBalanceB.toString()) {
+                        console.log("BLANCE B IS OK")
+                        break;
+                    }
+                } catch (error) {
+                    continue;
+                }
+            }
+
+
+
+
+            let result = await channels.fromWalletUser.init(channels.channelInitState).send(toNano('0.05'));
+            console.log(result);
+            for (let i = 0; i < 100; i++) {
+                await sleep(1000);
+                const data = await channels.channelA.getData();
+                if (data.state == 1) {
+                    console.log("Initialize Completed");
+                    break;
+                }
+            }
+
+
+
+            return true;
+        } catch (error) {
+            console.error(error);
+            return false;
+        }
+
     };
 
-    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
     const checkChannelState = async function (channelId) {
         const providerKeyPair = await getProviderKeyPair();
@@ -145,27 +225,6 @@ const useWeb3 = () => {
 
     const initBalances = async function (channelId, initBalance) {
 
-        // setTimeout(async () => {
-        // }, 3000);
-        // setTimeout(async () => {
-
-        //     console.log('test', fromNano(channelInitState.balanceA.add(toNano('0.05'))));
-        //     await fromWalletUser
-        //         .topUp({ coinsA: channelInitState.balanceA, coinsB: new BN(0) })
-        //         .send(channelInitState.balanceA.add(toNano('0.05'))); // +0.05 TON to network fees
-
-        //     // await fromWalletProvider
-        //     //     .topUp({ coinsA: new BN(0), coinsB: new BN(0) })
-        //     //     .send(new BN(0)); // +0.05 TON to network fees
-
-        //     await fromWalletUser.init(channelInitState).send(toNano('0.05'));
-        //     localStorage.setItem('channel' + channelId, initBalance);
-
-        //     console.log(await channelA.getChannelState());
-        //     const data2 = await channelA.getData();
-        //     console.log('balanceA = ', data2.balanceA.toString())
-        //     console.log('balanceB = ', data2.balanceB.toString())
-        // }, 5000);
 
         // const tempStep = 0.5;
         // const channelState1 = {
@@ -216,7 +275,51 @@ const useWeb3 = () => {
 
     }
 
-    return { requestChannel, getProviderKeyPair };
+    const closeChannel = async function (channelId) {
+
+        try {
+
+            if (localStorage.getItem('channelA' + channelId)) {
+                let channels = await _initChannel(channelId, localStorage.getItem('channelA' + channelId))
+                const channelState = {
+                    balanceA: toNano((localStorage.getItem('channelA' + channelId))),
+                    balanceB: toNano(localStorage.getItem('channelB' + channelId)),
+                    seqnoA: new BN(localStorage.getItem('channelASeqno' + channelId)),
+                    seqnoB: new BN(localStorage.getItem('channelBSeqno' + channelId))
+                };
+                const signatureCloseA = await channels.channelA.signClose(channelState);
+
+                if (!(await channels.channelB.verifyClose(channelState, signatureCloseA))) {
+                    throw new Error('Invalid B signature');
+                }
+                console.log("Close In Progress");
+
+                await channels.fromWalletUser.close({
+                    ...channelState,
+                    hisSignature: signatureCloseA
+                }).send(toNano('0.05'));
+
+                for (let i = 0; i < 100; i++) {
+                    await sleep(1000);
+                    const data = await channels.channelA.getData();
+                    console.log(data);
+                    if (data.state == 1) {
+                        console.log("Close Completed");
+                        break;
+                    }
+                }
+                return true;
+
+            }
+            return false;
+
+        } catch (error) {
+            console.error(error);
+            return false;
+        }
+    }
+
+    return { requestChannel, closeChannel };
 };
 
 export default useWeb3;

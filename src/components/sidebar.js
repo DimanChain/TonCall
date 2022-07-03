@@ -18,7 +18,7 @@ function Sidebar() {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-    const { requestChannel } = useWeb3();
+    const { requestChannel, closeChannel } = useWeb3();
 
     const dispatch = useDispatch();
     const { publicKey, secretKey, walletAddress, balance } = useSelector((s) => s.appInfo);
@@ -167,7 +167,9 @@ function Sidebar() {
                             <Button className={"m-2 text-light border-light"} variant={"outlined"}
                                 onClick={handleOpen}>Deposite</Button>
                             <Button className={"m-2 text-light border-light"} variant={"outlined"}
-                                onClick={() => requestChannel(213124)}>TEST</Button>
+                                onClick={() => requestChannel(51354, 1)}>Request Channel</Button>
+                            <Button className={"m-2 text-light border-light"} variant={"outlined"}
+                                onClick={() => closeChannel(51354)}>Close Channel</Button>
                         </> :
                         <div className={"m-2 mt-5 text-light border-light"}>
                             <span className={"text-light fw-bold "}>To use our platform and connect to other user you have to create a wallet or import one</span>
