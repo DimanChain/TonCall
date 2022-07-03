@@ -329,7 +329,40 @@ const useWeb3 = () => {
         }
     }
 
-    return { requestChannel, closeChannel };
+    const costBalance = async (channelId, fee) => {
+        try {
+            if (localStorage.getItem('channelA' + channelId)) {
+                let channels = await _initChannel(channelId, localStorage.getItem('channelA' + channelId))
+                const newABalance = parseFloat(localStorage.getItem('channelA' + channelId)) - parseFloat(fee);
+                const newBBalance = parseFloat(localStorage.getItem('channelA' + channelId)) + parseFloat(fee);
+                const newSeqnoA = localStorage.getItem('channelASeqno' + channelId) + 1;
+                const newSeqnoB = localStorage.getItem('channelBSeqno' + channelId) + 1;
+                const channelState = {
+                    balanceA: toNano(parseFloat(newABalance).toFixed(8).toString()),
+                    balanceB: toNano(parseFloat(newBBalance).toFixed(8).toString()),
+                    seqnoA: newSeqnoA,
+                    seqnoB: newSeqnoB
+                };
+                localStorage.setItem('channelA' + channelId, newABalance.toFixed(8));
+                localStorage.setItem('channelB' + channelId, newBBalance.toFixed(8));
+                localStorage.setItem('channelASeqno' + channelId, newSeqnoA);
+                localStorage.setItem('channelBSeqno' + channelId, newSeqnoB);
+
+                const signatureA = await channels.channelA.signState(channelState);
+
+                if (!(await channels.channelB.verifyState(channelState, signatureA))) {
+                    throw new Error('Invalid A signature');
+                }
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error(error);
+            return false;
+        }
+    }
+
+    return { requestChannel, closeChannel, costBalance };
 };
 
 export default useWeb3;
