@@ -1,6 +1,4 @@
 import TonWeb from 'tonweb';
-import { useDispatch, useSelector } from "react-redux";
-import { setUserInfo } from "../redux/AppInfoSlice";
 import * as tonMnemonic from "tonweb-mnemonic";
 
 
@@ -33,9 +31,8 @@ const useWeb3 = () => {
         let words = providerWords.split(' ');
         return await tonMnemonic.mnemonicToKeyPair(words);
     }
+
     const requestChannel = async (channelId) => {
-
-
         const providerKeyPair = await getProviderKeyPair();
 
         const provWallet = tonweb.wallet.create({

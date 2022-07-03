@@ -1,6 +1,5 @@
-import authorProfile from '../../assets/profile-author.jpg'
 import SendIcon from '@mui/icons-material/Send';
-import {Box, Button, Dialog, IconButton, Input, Modal, Rating, TextField, Typography} from '@mui/material'
+import {Box, Button, Dialog, Divider, IconButton, Input, TextField, Typography} from '@mui/material'
 import classes from './ChatPage.module.css'
 import {useEffect, useState, useRef} from "react";
 import moment from 'moment'
@@ -15,22 +14,23 @@ function ChatPage() {
     const {client, server} = location.state?.data;
     const [messages, setMessages] = useState([{
         owner: "YOU",
-        createAt: moment().format("yyyy/MM/DD"),
+        createAt: moment().format("HH:mm:ss"),
         isClient: true,
         body: "What version of the css-loader, style-loader and postcss-loader do you use? "
     }, {
-        owner: "Dr,Wick",
-        createAt: moment().format("yyyy/MM/DD"),
+        owner: server.name,
+        createAt: moment().format("HH:mm:ss"),
         isClient: false,
         body: " I'm using a boilerplate so I may not be able to update them to latest version for all of them"
     }, {
         owner: "YOU",
-        createAt: moment().format("yyyy/MM/DD"),
+        createAt: moment().format("HH:mm:ss"),
         isClient: true,
         body: "gotcha!!"
     }]);
     const [clientText, setClientText] = useState("");
     const [meetingDuration, setMeetingDuration] = useState(10);
+    const [meetingDurationMoment, setMeetingDurationMoment] = useState();
     const [serverText, setServerText] = useState("");
 
     const [startTime, setStartTime] = useState(moment());
@@ -46,6 +46,12 @@ function ChatPage() {
         containerRef.current.scrollIntoView({behavior: "smooth"});
     }, [messages])
 
+    // useEffect(() => {
+    //     if (meetingDuration > 0) {
+    //         setMeetingDurationMoment(moment().add(meetingDuration, "minute").toString())
+    //     }
+    // }, [meetingDuration])
+
     const textHandler = (e, isClient) => {
         if (isClient) {
             setClientText(e.target.value);
@@ -57,19 +63,22 @@ function ChatPage() {
     const clientRequestForChannel = () => {
         setOpenConfirmModal(false)
         setServerOpenConfirmModal(true)
+        refCounter.current.pause();
     }
 
     const serverConfirmsRequestedChannel = () => {
         setServerOpenConfirmModal(false)
         setStartmeeting(true)
         setStartTime(moment().clone());
+        setMeetingDurationMoment(moment().add(meetingDuration, "minute").toString())
+        refCounter.current.start();
     }
 
     const sendHandler = (isClient) => {
         setMessages(prev => {
             return [...prev, {
                 owner: (isClient ? "YOU" : server.name),
-                createAt: moment().format("yyyy/MM/DD"),
+                createAt: moment().format("HH:mm:ss"),
                 isClient: isClient,
                 body: (isClient ? clientText : serverText)
             }]
@@ -92,7 +101,7 @@ function ChatPage() {
     const endChannel = () => {
         setEndTime(moment().clone());
         localStorage.removeItem("chatState");
-        refCounter.current.stop();
+        refCounter.current.pause();
         setopenFinishModal(true)
     };
 
@@ -113,7 +122,8 @@ function ChatPage() {
                                 <Button variant={"outlined"} color={"error"}>
                                     <Countdown
                                         ref={refCounter}
-                                        daysInHours={true} date={moment().add(meetingDuration, "minute").toString()}
+                                        daysInHours={true}
+                                        date={meetingDurationMoment}
                                         zeroPadTime={2}
                                         onComplete={endChannel}
                                         onTick={countDownSaver}/>
@@ -125,19 +135,18 @@ function ChatPage() {
                     <div className={classes.messagesListContainer}>
                         <div className={classes.messagesList + ' pt-3'}>
                             {messages.map((messageValue, messageIndex) => {
-                                const {body, createdAt,} = messageValue
+                                const {body, createAt,} = messageValue
                                 return (
                                     <div
                                         className={classes.messageWrapper + ' mt-0 ' + (messageValue.isClient ? 'justify-content-end' : 'justify-content-start')}>
                                         {messageValue.isClient ?
                                             <>
-
                                                 <Box
                                                     className={classes.message + ' m-3 mt-0 p-3  ' + classes.clientMessages}
                                                     key={messageIndex}>
-                                                    <div>{messageValue.owner}</div>
-                                                    <div>{body}</div>
-                                                    <div>{moment(createdAt).format("HH:mm:ss")}</div>
+                                                    <span className={"fs-6"}>{messageValue.owner}</span>
+                                                    <span className={"fs-5 fw-bold"}>{body}</span>
+                                                    <span className={"fs-6"}>{createAt}</span>
                                                 </Box>
                                                 <img src={client.image}
                                                      className={classes.profile}/>
@@ -149,9 +158,9 @@ function ChatPage() {
                                                 <Box
                                                     className={classes.message + ' m-3 mt-0 p-3  ' + classes.serverMessages}
                                                     key={messageIndex}>
-                                                    <div>{messageValue.owner}</div>
-                                                    <div>{body}</div>
-                                                    <div>{moment(createdAt).format("HH:mm:ss")}</div>
+                                                    <span className={"fs-6"}>{messageValue.owner}</span>
+                                                    <span className={"fs-5 fw-bold"}>{body}</span>
+                                                    <span className={"fs-6"}>{createAt}</span>
                                                 </Box>
 
                                             </>}
@@ -168,14 +177,16 @@ function ChatPage() {
                         }} disabled={!serverText} classes={{disabled: classes.disabled}}>
                             <SendIcon/>
                         </IconButton>
+                        <img src={server.image} className={classes.profileInModal}/>
                         <TextField
+
                             className={classes.input}
                             placeholder={('write message here ...')}
                             multiline
                             rows={1}
                             // sx={{ padding: "13px 4px" }}
                             onChange={(e) => {
-                                textHandler(e, false)
+                                setServerText(e.target.value)
                             }}
                             value={serverText}
                             inputProps={{
@@ -184,14 +195,16 @@ function ChatPage() {
                                     handleKeyPress(e, false)
                                 }
                             }}
+
                         />
 
-                        <div></div>
+                        <Divider orientation="vertical" variant="middle" flexItem/>
                         <IconButton onClick={() => {
                             sendHandler(true)
                         }} disabled={!clientText} classes={{disabled: classes.disabled}}>
                             <SendIcon/>
                         </IconButton>
+                        <img src={client.image} className={classes.profileInModal}/>
                         <TextField
                             className={classes.input}
                             placeholder={('write message here ...')}
@@ -199,7 +212,7 @@ function ChatPage() {
                             rows={1}
                             // sx={{ padding: "13px 4px" }}
                             onChange={(e) => {
-                                textHandler(e, true)
+                                setClientText(e.target.value)
                             }}
                             value={clientText}
                             inputProps={{
@@ -234,7 +247,8 @@ function ChatPage() {
                                         aria-labelledby="modal-modal-title"
                                         aria-describedby="modal-modal-description">
                                         <div className={classes.confirmModal}>
-                                            <span>Please confirm channel request</span>
+                                            <img src={server.image} className={classes.profileInModal}/>
+                                            <span><span className={"fw-bold"}>{server.name}</span> Please confirm channel request</span>
                                             <span>requested duration is {meetingDuration} minutes</span>
                                             <Button className={"m-2 text-light border-light generalBtn"}
                                                     onClick={serverConfirmsRequestedChannel}
@@ -254,11 +268,12 @@ function ChatPage() {
                                         }}
                                         container={() => document.getElementById('clientOverLay')}
                                         disableEscapeKeyDown={true}
-
                                         open={openConfirmModal}
                                         aria-labelledby="modal-modal-title"
                                         aria-describedby="modal-modal-description">
                                         <div className={classes.confirmModal}>
+                                            <img src={client.image} className={classes.profileInModal}/>
+                                            <span><span className={"fw-bold"}>{client.name}</span> as Client requesting for start channel</span>
                                             <span>please initial the duration of </span>
                                             <span>conversation / meeting / consultation</span>
                                             <Input
@@ -268,11 +283,12 @@ function ChatPage() {
                                                         setMeetingDuration(e.target.value)
                                                     }
                                                 }}
+                                                classes={{input: "text-center"}}
                                                 placeholder={"Select the duration"}
                                                 type={"number"}
                                                 endAdornment={<span>minutes</span>}/>
                                             <span>initial amount to start channel :</span>
-                                            <span>fee {server.fee} * {meetingDuration} * 60 = {(server.fee * meetingDuration * 60).toFixed(2)}</span>
+                                            <span>{server.fee} (fee) * {meetingDuration} (min) * 60 (seconds) = {(server.fee * meetingDuration * 60).toFixed(2)}</span>
                                             <Button className={"m-2 text-light border-light generalBtn"}
                                                     onClick={clientRequestForChannel}
                                                     variant={"contained"}>confirm</Button>
@@ -301,6 +317,7 @@ function ChatPage() {
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description">
                 <div className={classes.confirmModal}>
+                    <img src={client.image} className={classes.profileInModal}/>
                     <span>you spend {moment.duration(endTime.diff(startTime)).hours().toString().padStart(2, '0')
                         + ':' + moment.duration(endTime.diff(startTime)).minutes().toString().padStart(2, '0')
                         + ':' + moment.duration(endTime.diff(startTime)).seconds().toString().padStart(2, '0')} and {(moment.duration(endTime.diff(startTime)).asSeconds() * server.fee).toFixed(5)} token this time!</span>
