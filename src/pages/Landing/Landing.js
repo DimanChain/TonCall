@@ -109,51 +109,7 @@ function Landing() {
           <img src={copyright} alt="" />
           <p>Copyright 2022 DimanChain - All Rights Reserved</p>
         </div>
-        {/* 
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
-        <div className={"d-flex flex-column flex-grow-1"}>
-          <Link to={"/mainPage"}>
-            <Button
-              classes={{ text: "requestBtn" }}
-              className={"m-2 requestBtn"}
-              variant={"contained"}
-            >
-              Go to main page
-            </Button>
-          </Link>
-          <p className={LandingStyle.ali}>lkdjfngkjd</p>
-        </div> */}
+        
       </div>
     </>
   );
