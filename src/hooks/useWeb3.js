@@ -13,7 +13,6 @@ const BN = TonWeb.utils.BN;
 const toNano = TonWeb.utils.toNano;
 const fromNano = TonWeb.utils.fromNano;
 
-const providerWallet = "EQDsaBYtU21bItJIrjsnj__aDkieetkhBLk986CxBkSQLbVt";
 const providerWords = "refuse rude cream index absent announce exile ready bean open sketch prepare isolate pair visual logic category spoil tomato flip lawn news asset any"
 
 function hexToBytes(hex) {
@@ -29,6 +28,10 @@ function toHexString(byteArray) {
 }
 
 const useWeb3 = () => {
+    const dispatch = useDispatch();
+
+    const { publicKey, secretKey, walletAddress, balance } = useSelector((s) => s.appInfo);
+
     const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
     const getProviderKeyPair = async () => {
@@ -55,7 +58,6 @@ const useWeb3 = () => {
         const walletUserAddress = await walletUser.getAddress(); // address of this wallet in blockchain
         console.log('User Address = ', walletUserAddress.toString(true, true, true));
         console.log('Prov Address = ', provWalletAddress.toString(true, true, true));
-        console.log('balance', await tonweb.getBalance(providerWallet));
 
         // console.error(walletAddress);
         const channelInitState = {
@@ -121,19 +123,24 @@ const useWeb3 = () => {
                 .send(channels.channelConfig.initBalanceA.add(toNano('0.05'))); // +0.05 TON to network fees
 
 
+
             for (let i = 0; i < 100; i++) {
                 await sleep(1000);
                 try {
                     const data = await channels.channelA.getData();
-                    console.log(data.balanceA.toString());
                     if (data.balanceA.toString() == channels.channelConfig.initBalanceA.toString()) {
-                        console.log("BLANCE A IS OK")
+                        console.log("User Balance Updated")
                         break;
                     }
                 } catch (error) {
                     continue;
                 }
             }
+            dispatch(setUserInfo({
+                publicKey, secretKey, walletAddress,
+                balance: await tonweb.getBalance((await channels.walletUser.getAddress()).toString(true, true, true))
+            }));
+
             await channels.fromWalletProvider
                 .topUp({ coinsA: new BN(0), coinsB: channels.channelConfig.initBalanceB })
                 .send(channels.channelConfig.initBalanceB.add(toNano('0.05'))); // +0.05 TON to network fees
@@ -142,21 +149,22 @@ const useWeb3 = () => {
                 await sleep(1000);
                 try {
                     const data = await channels.channelB.getData();
-                    console.log(data.balanceB.toString());
                     if (data.balanceB.toString() == channels.channelConfig.initBalanceB.toString()) {
-                        console.log("BLANCE B IS OK")
+                        console.log("Provider Balance Updated")
                         break;
                     }
                 } catch (error) {
                     continue;
                 }
             }
-
+            dispatch(setUserInfo({
+                publicKey, secretKey, walletAddress,
+                balance: await tonweb.getBalance((await channels.walletUser.getAddress()).toString(true, true, true))
+            }));
 
 
 
             let result = await channels.fromWalletUser.init(channels.channelInitState).send(toNano('0.05'));
-            console.log(result);
             for (let i = 0; i < 100; i++) {
                 await sleep(1000);
                 const data = await channels.channelA.getData();
@@ -165,6 +173,10 @@ const useWeb3 = () => {
                     break;
                 }
             }
+            dispatch(setUserInfo({
+                publicKey, secretKey, walletAddress,
+                balance: await tonweb.getBalance((await channels.walletUser.getAddress()).toString(true, true, true))
+            }));
 
 
 
@@ -213,67 +225,16 @@ const useWeb3 = () => {
             } catch (error) {
                 val = -1;
             }
-            console.log(val);
             if (val > -1) break;
 
         }
+        console.log("Payment Channel Activated!");
         return val
 
 
 
     }
 
-    const initBalances = async function (channelId, initBalance) {
-
-
-        // const tempStep = 0.5;
-        // const channelState1 = {
-        //     balanceA: toNano((initBalance - tempStep).toString()),
-        //     balanceB: toNano(tempStep.toString()),
-        //     seqnoA: new BN(1),
-        //     seqnoB: new BN(0)
-        // };
-
-        // const signatureA1 = await channelA.signState(channelState1);
-        // if (!(await channelB.verifyState(channelState1, signatureA1))) {
-        //     throw new Error('Invalid A signature');
-        // }
-        // //const signatureB1 = await channelB.signState(channelState1);
-        // const channelState2 = {
-        //     balanceA: channelState1.balanceA - toNano((tempStep).toString()),
-        //     balanceB: channelState1.balanceA - toNano((tempStep.toString())),
-        //     seqnoA: new BN(2),
-        //     seqnoB: new BN(0)
-        // };
-        // // A signs this state and send signed state to B (e.g. via websocket)
-
-        // const signatureA2 = await channelA.signState(channelState2);
-
-        // // B checks that the state is changed according to the rules, signs this state, send signed state to A (e.g. via websocket)
-
-        // if (!(await channelB.verifyState(channelState2, signatureA2))) {
-        //     throw new Error('Invalid A signature');
-        // }
-
-        // const signatureCloseA = await channelA.signClose(channelState2);
-
-        // // A verifies and signs this closing message and include B's signature
-
-        // // A sends closing message to blockchain, payments channel smart contract
-        // // Payment channel smart contract will send funds to participants according to the balances of the sent state.
-
-        // if (!(await channelB.verifyClose(channelState2, signatureCloseA))) {
-        //     throw new Error('Invalid B signature');
-        // }
-
-        // await fromWalletUser.close({
-        //     ...channelState2,
-        //     hisSignature: signatureCloseA
-        // }).send(toNano('0.05'));
-
-
-
-    }
 
     const closeChannel = async function (channelId) {
 
@@ -284,8 +245,8 @@ const useWeb3 = () => {
                 const channelState = {
                     balanceA: toNano((localStorage.getItem('channelA' + channelId))),
                     balanceB: toNano((localStorage.getItem('channelB' + channelId))),
-                    seqnoA: new BN(localStorage.getItem('channelASeqno' + channelId) + 1),
-                    seqnoB: new BN(localStorage.getItem('channelBSeqno' + channelId) + 1)
+                    seqnoA: new BN(parseInt(localStorage.getItem('channelASeqno' + channelId)) + 1),
+                    seqnoB: new BN(parseInt(localStorage.getItem('channelBSeqno' + channelId)) + 1)
                 };
                 console.log("Balance A:", fromNano(channelState.balanceA))
                 console.log("Balance B:", fromNano(channelState.balanceB))
@@ -308,16 +269,22 @@ const useWeb3 = () => {
                     ...channelState,
                     hisSignature: signatureCloseA
                 }).send(toNano('0.05'));
-                console.log(result);
                 for (let i = 0; i < 100; i++) {
                     await sleep(1000);
                     const data = await channels.channelA.getData();
-                    console.log(data);
                     if (data.state == 0) {
                         console.log("Close Operation Completed");
+                        localStorage.removeItem('channelA' + channelId);
+                        localStorage.removeItem('channelB' + channelId);
+                        localStorage.removeItem('channelASeqno' + channelId);
+                        localStorage.removeItem('channelBSeqno' + channelId);
                         break;
                     }
                 }
+                dispatch(setUserInfo({
+                    publicKey, secretKey, walletAddress,
+                    balance: await tonweb.getBalance((await channels.walletUser.getAddress()).toString(true, true, true))
+                }));
                 return true;
 
             }
@@ -336,7 +303,7 @@ const useWeb3 = () => {
                 const newABalance = parseFloat(localStorage.getItem('channelA' + channelId)) - parseFloat(fee);
                 console.log("newABalance >>>>> " + newABalance.toString())
                 const newBBalance = parseFloat(localStorage.getItem('channelB' + channelId)) + parseFloat(fee);
-                console.log("newBBalance >>>>> "  + newBBalance.toString())
+                console.log("newBBalance >>>>> " + newBBalance.toString())
                 const newSeqnoA = parseInt(localStorage.getItem('channelASeqno' + channelId)) + 1;
                 const newSeqnoB = parseInt(localStorage.getItem('channelBSeqno') + channelId) + 1;
                 const channelState = {
