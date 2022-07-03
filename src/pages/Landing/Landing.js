@@ -63,6 +63,7 @@ function Landing() {
           </TitleLanding>
           <LineLanding />
           <ReactPlayer
+
             url="https://www.youtube.com/watch?v=Rq5SEhs9lws"
             width={"100%"}
             height={500}

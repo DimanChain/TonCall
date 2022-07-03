@@ -7,27 +7,18 @@ import Sidebar from "../../components/sidebar";
 import {Link, useLocation} from "react-router-dom";
 import serverWaiting from "../../assets/waiting-server.gif"
 import clientRequest from "../../assets/client-request.gif"
+
 import Countdown from "react-countdown";
+import ReactPlayer from "react-player";
+
+const chat_Type = 1
+const voice_Type = 2
+const video_Type = 3
 
 function ChatPage() {
     const location = useLocation();
     const {client, server} = location.state?.data;
-    const [messages, setMessages] = useState([{
-        owner: "YOU",
-        createAt: moment().format("HH:mm:ss"),
-        isClient: true,
-        body: "What version of the css-loader, style-loader and postcss-loader do you use? "
-    }, {
-        owner: server.name,
-        createAt: moment().format("HH:mm:ss"),
-        isClient: false,
-        body: " I'm using a boilerplate so I may not be able to update them to latest version for all of them"
-    }, {
-        owner: "YOU",
-        createAt: moment().format("HH:mm:ss"),
-        isClient: true,
-        body: "gotcha!!"
-    }]);
+    const [messages, setMessages] = useState([]);
     const [clientText, setClientText] = useState("");
     const [meetingDuration, setMeetingDuration] = useState(10);
     const [meetingDurationMoment, setMeetingDurationMoment] = useState();
@@ -132,6 +123,17 @@ function ChatPage() {
                             </> : null
                         }
                     </div>
+                    {
+                        startmeeting && (server.type === video_Type || server.type === voice_Type) ?
+                            <div className={classes.mediaPlayerContainer + ' ' + (server.type === video_Type ? classes.mediaPlayerVideo : classes.mediaPlayerVoice)}>
+                                <ReactPlayer config={{ file: {
+                                        attributes: {
+                                            controlsList: 'nodownload'
+                                        }
+                                    }}}
+                                             playing url={server.mediaSource} height={"90%"} controls={true}/>
+                            </div> : null
+                    }
                     <div className={classes.messagesListContainer}>
                         <div className={classes.messagesList + ' pt-3'}>
                             {messages.map((messageValue, messageIndex) => {

@@ -117,7 +117,8 @@ function MainPage() {
                                                       fee: selectedFee.fee,
                                                       name: catVal.title,
                                                       image: catVal.image,
-                                                      type : selectedFee.type
+                                                      type : selectedFee.type,
+                                                      mediaSource : (selectedFee.type === video_Type ? catVal.videoUrl : catVal.voiceUrl)
                                                   }
                                               }
                                           }}>
