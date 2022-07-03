@@ -59,7 +59,7 @@ const useWeb3 = () => {
 
         // console.error(walletAddress);
         const channelInitState = {
-            balanceA: toNano(initBalance.toString()), // A's initial balance in Toncoins. Next A will need to make a top-up for this amount
+            balanceA: toNano(parseFloat(initBalance).toFixed(8).toString()), // A's initial balance in Toncoins. Next A will need to make a top-up for this amount
             balanceB: toNano('0.01'), // B's initial balance in Toncoins. Next B will need to make a top-up for this amount
             seqnoA: new BN(0), // initially 0
             seqnoB: new BN(0)  // initially 0
@@ -334,9 +334,11 @@ const useWeb3 = () => {
             if (localStorage.getItem('channelA' + channelId)) {
                 let channels = await _initChannel(channelId, localStorage.getItem('channelA' + channelId))
                 const newABalance = parseFloat(localStorage.getItem('channelA' + channelId)) - parseFloat(fee);
-                const newBBalance = parseFloat(localStorage.getItem('channelA' + channelId)) + parseFloat(fee);
-                const newSeqnoA = localStorage.getItem('channelASeqno' + channelId) + 1;
-                const newSeqnoB = localStorage.getItem('channelBSeqno' + channelId) + 1;
+                console.log("newABalance >>>>> " + newABalance.toString())
+                const newBBalance = parseFloat(localStorage.getItem('channelB' + channelId)) + parseFloat(fee);
+                console.log("newBBalance >>>>> "  + newBBalance.toString())
+                const newSeqnoA = parseInt(localStorage.getItem('channelASeqno' + channelId)) + 1;
+                const newSeqnoB = parseInt(localStorage.getItem('channelBSeqno') + channelId) + 1;
                 const channelState = {
                     balanceA: toNano(parseFloat(newABalance).toFixed(8).toString()),
                     balanceB: toNano(parseFloat(newBBalance).toFixed(8).toString()),

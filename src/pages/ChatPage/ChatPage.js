@@ -36,7 +36,7 @@ function ChatPage() {
     const containerRef = useRef();
     const refCounter = useRef();
 
-    const {requestChannel, closeChannel} = useWeb3();
+    const {requestChannel, closeChannel, costBalance} = useWeb3();
 
     useEffect(() => {
         if (localStorage.getItem("chatState")?.length > 0 && localStorage.getItem("channelId")?.length > 0) {
@@ -145,6 +145,7 @@ function ChatPage() {
                                         daysInHours={true}
                                         date={meetingDurationMoment}
                                         zeroPadTime={2}
+                                        onTick={() => {costBalance(localStorage.getItem("channelId"),server.fee)}}
                                         onComplete={endChannel}/>
                                 </Button>
                                 <Button variant={"contained"} color={"error"} onClick={endChannel}>End Channel</Button>
