@@ -250,6 +250,8 @@ const useWeb3 = () => {
                 };
                 console.log("Balance A:", fromNano(channelState.balanceA))
                 console.log("Balance B:", fromNano(channelState.balanceB))
+                console.log("seqno A:", channelState.seqnoA.toString())
+                console.log("seqno B:", channelState.seqnoB.toString())
 
                 // const signatureA2 = await channels.channelA.signState(channelState);
 
@@ -305,7 +307,7 @@ const useWeb3 = () => {
                 const newBBalance = parseFloat(localStorage.getItem('channelB' + channelId)) + parseFloat(fee);
                 console.log("newBBalance >>>>> " + newBBalance.toString())
                 const newSeqnoA = parseInt(localStorage.getItem('channelASeqno' + channelId)) + 1;
-                const newSeqnoB = parseInt(localStorage.getItem('channelBSeqno') + channelId) + 1;
+                const newSeqnoB = parseInt(localStorage.getItem('channelBSeqno' + channelId)) + 1;
                 const channelState = {
                     balanceA: toNano(parseFloat(newABalance).toFixed(8).toString()),
                     balanceB: toNano(parseFloat(newBBalance).toFixed(8).toString()),
