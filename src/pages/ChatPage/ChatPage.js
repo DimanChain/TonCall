@@ -10,6 +10,8 @@ import clientRequest from "../../assets/client-request.gif"
 
 import Countdown from "react-countdown";
 import ReactPlayer from "react-player";
+import useWeb3 from "../../hooks/useWeb3";
+import {Spinner} from "react-bootstrap";
 
 const chat_Type = 1
 const voice_Type = 2
@@ -21,8 +23,9 @@ function ChatPage() {
     const [messages, setMessages] = useState([]);
     const [clientText, setClientText] = useState("");
     const [meetingDuration, setMeetingDuration] = useState(10);
-    const [meetingDurationMoment, setMeetingDurationMoment] = useState();
+    const [meetingDurationMoment, setMeetingDurationMoment] = useState()//moment().add(10, "minute").toString());
     const [serverText, setServerText] = useState("");
+    const [loaderRequest, setLoaderRequest] = useState(false);
 
     const [startTime, setStartTime] = useState(moment());
     const [endTime, setEndTime] = useState(moment());
@@ -32,6 +35,14 @@ function ChatPage() {
     const [startmeeting, setStartmeeting] = useState(false);
     const containerRef = useRef();
     const refCounter = useRef();
+
+    const {requestChannel, closeChannel} = useWeb3();
+
+    useEffect(() => {
+        if (localStorage.getItem("chatState")?.length > 0 && localStorage.getItem("channelId")?.length > 0) {
+
+        }
+    }, [])
 
     useEffect(() => {
         containerRef.current.scrollIntoView({behavior: "smooth"});
@@ -51,7 +62,12 @@ function ChatPage() {
         }
     }
 
-    const clientRequestForChannel = () => {
+    const clientRequestForChannel = async () => {
+        let channelId = Math.floor(100000 + Math.random() * 900000);
+        setLoaderRequest(true);
+        await requestChannel(channelId, (server.fee * meetingDuration * 60));
+        setLoaderRequest(false);
+        localStorage.setItem("channelId", channelId);
         setOpenConfirmModal(false)
         setServerOpenConfirmModal(true)
         refCounter.current.pause();
@@ -60,9 +76,23 @@ function ChatPage() {
     const serverConfirmsRequestedChannel = () => {
         setServerOpenConfirmModal(false)
         setStartmeeting(true)
-        setStartTime(moment().clone());
-        setMeetingDurationMoment(moment().add(meetingDuration, "minute").toString())
+        let beginStamp = moment().clone();
+        let endStamp = moment().add(meetingDuration, "minute").toString();
+        setStartTime(beginStamp);
+        localStorage.setItem("chatState", JSON.stringify({start: beginStamp.toString(), duration: endStamp}));
+        setMeetingDurationMoment(endStamp)
         refCounter.current.start();
+    }
+
+    const serverRejectRequestedChannel = async () => {
+        setServerOpenConfirmModal(false)
+        setOpenConfirmModal(true)
+        setStartmeeting(false)
+        setLoaderRequest(true);
+        await closeChannel(localStorage.getItem("channelId"));
+        setLoaderRequest(false);
+        localStorage.removeItem("channelId");
+
     }
 
     const sendHandler = (isClient) => {
@@ -80,6 +110,7 @@ function ChatPage() {
             setServerText('');
         }
     }
+
     const handleKeyPress = (e, isClient) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -89,18 +120,16 @@ function ChatPage() {
         }
     };
 
-    const endChannel = () => {
+    const endChannel = async () => {
         setEndTime(moment().clone());
         localStorage.removeItem("chatState");
         refCounter.current.pause();
         setopenFinishModal(true)
+        setLoaderRequest(true);
+        await closeChannel(localStorage.getItem("channelId"));
+        setLoaderRequest(false);
+        localStorage.removeItem("channelId");
     };
-
-    const countDownSaver = ({total, days, hours, minutes, seconds, milliseconds, completed}) => {
-
-        localStorage.setItem("chatState", `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
-    };
-
 
     return (
         <>
@@ -116,8 +145,7 @@ function ChatPage() {
                                         daysInHours={true}
                                         date={meetingDurationMoment}
                                         zeroPadTime={2}
-                                        onComplete={endChannel}
-                                        onTick={countDownSaver}/>
+                                        onComplete={endChannel}/>
                                 </Button>
                                 <Button variant={"contained"} color={"error"} onClick={endChannel}>End Channel</Button>
                             </> : null
@@ -125,13 +153,19 @@ function ChatPage() {
                     </div>
                     {
                         startmeeting && (server.type === video_Type || server.type === voice_Type) ?
-                            <div className={classes.mediaPlayerContainer + ' ' + (server.type === video_Type ? classes.mediaPlayerVideo : classes.mediaPlayerVoice)}>
-                                <ReactPlayer config={{ file: {
-                                        attributes: {
-                                            controlsList: 'nodownload'
+                            <div
+                                className={classes.mediaPlayerContainer + ' ' + (server.type === video_Type ? classes.mediaPlayerVideo : classes.mediaPlayerVoice)}>
+                                <ReactPlayer
+                                    playing={!openFinishModal}
+                                    loop
+                                    config={{
+                                        file: {
+                                            attributes: {
+                                                controlsList: 'nodownload'
+                                            }
                                         }
-                                    }}}
-                                             playing url={server.mediaSource} height={"90%"} controls={true}/>
+                                    }}
+                                    playing url={server.mediaSource} height={"90%"} controls={true}/>
                             </div> : null
                     }
                     <div className={classes.messagesListContainer}>
@@ -252,15 +286,22 @@ function ChatPage() {
                                             <img src={server.image} className={classes.profileInModal}/>
                                             <span><span className={"fw-bold"}>{server.name}</span> Please confirm channel request</span>
                                             <span>requested duration is {meetingDuration} minutes</span>
-                                            <Button className={"m-2 text-light border-light generalBtn"}
-                                                    onClick={serverConfirmsRequestedChannel}
-                                                    variant={"contained"}>confirm</Button>
+                                            <div className={"d-flex flex-row justify-content-between"}>
+                                                <Button className={"m-2 text-light border-light generalBtn"}
+                                                        onClick={serverConfirmsRequestedChannel}
+                                                        variant={"contained"}>confirm</Button>
+                                                <Button className={"m-2 text-light border-light generalBtn"}
+                                                        onClick={serverRejectRequestedChannel}
+                                                        color={"error"}
+                                                        variant={"contained"}>Reject</Button>
+                                            </div>
+
                                         </div>
                                     </Dialog>
                                 }
                             </div>
                             <div className={classes.overlayRight} id={"clientOverLay"}>
-                                {(!openServerConfirmModal) ?
+                                {(!openServerConfirmModal) && (!loaderRequest) ?
                                     <Dialog
                                         onClose={(e, reason) => {
                                             if (reason && reason === "backdropClick") {
@@ -299,8 +340,18 @@ function ChatPage() {
                                     :
                                     <>
                                         <img src={clientRequest} className={classes.gifStyle}/>
-                                        <Typography variant={"h5"} className={"text-light"}>Client is waiting for
-                                            confirm</Typography>
+                                        {loaderRequest ?
+                                            <>
+                                                <Typography variant={"h5"} className={"text-light"}>Please Wait
+                                                    ... </Typography>
+                                                <Typography variant={"h5"} className={"text-light"}>Creating Payment
+                                                    Channel</Typography>
+                                                <Typography variant={"h5"} className={"text-light"}>more info in console
+                                                    log</Typography>
+                                            </> :
+                                            <Typography variant={"h5"} className={"text-light"}>Client is waiting for
+                                                confirm ...</Typography>
+                                        }
                                     </>
                                 }
                             </div>
@@ -323,9 +374,15 @@ function ChatPage() {
                     <span>you spend {moment.duration(endTime.diff(startTime)).hours().toString().padStart(2, '0')
                         + ':' + moment.duration(endTime.diff(startTime)).minutes().toString().padStart(2, '0')
                         + ':' + moment.duration(endTime.diff(startTime)).seconds().toString().padStart(2, '0')} and {(moment.duration(endTime.diff(startTime)).asSeconds() * server.fee).toFixed(5)} token this time!</span>
-                    <Link to={"/mainPage"}
-                          className={"m-2 text-light border-light generalBtn p-2 text-center rounded-3"}>See you
-                        soon!</Link>
+                    {loaderRequest ?
+                        <>
+                            <span>Closing channel plaese wait <Spinner/></span>
+                        </>
+                        :
+                        <>
+                            <Link to={"/mainPage"} className={"m-2 text-light border-light generalBtn p-2 text-center rounded-3"}>See you soon!</Link>
+                        </>
+                    }
                 </div>
             </Dialog>
         </>
