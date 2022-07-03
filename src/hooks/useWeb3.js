@@ -111,8 +111,8 @@ const useWeb3 = () => {
             let channels = await _initChannel(channelId, initBalance)
             await channels.fromWalletUser.deploy().send(toNano('0.05'));
             await checkChannelState(channelId);
-            localStorage.setItem('channelA' + channelId, toNano(initBalance.toString()));
-            localStorage.setItem('channelB' + channelId, toNano("0.01"));
+            localStorage.setItem('channelA' + channelId, initBalance.toString());
+            localStorage.setItem('channelB' + channelId, "0.01");
             localStorage.setItem('channelASeqno' + channelId, 0);
             localStorage.setItem('channelBSeqno' + channelId, 0);
 
@@ -283,10 +283,20 @@ const useWeb3 = () => {
                 let channels = await _initChannel(channelId, localStorage.getItem('channelA' + channelId))
                 const channelState = {
                     balanceA: toNano((localStorage.getItem('channelA' + channelId))),
-                    balanceB: toNano(localStorage.getItem('channelB' + channelId)),
-                    seqnoA: new BN(localStorage.getItem('channelASeqno' + channelId)),
-                    seqnoB: new BN(localStorage.getItem('channelBSeqno' + channelId))
+                    balanceB: toNano((localStorage.getItem('channelB' + channelId))),
+                    seqnoA: new BN(localStorage.getItem('channelASeqno' + channelId) + 1),
+                    seqnoB: new BN(localStorage.getItem('channelBSeqno' + channelId) + 1)
                 };
+                console.log("Balance A:", fromNano(channelState.balanceA))
+                console.log("Balance B:", fromNano(channelState.balanceB))
+
+                // const signatureA2 = await channels.channelA.signState(channelState);
+
+
+                // if (!(await channels.channelB.verifyState(channelState, signatureA2))) {
+                //     throw new Error('Invalid A signature');
+                // }
+
                 const signatureCloseA = await channels.channelA.signClose(channelState);
 
                 if (!(await channels.channelB.verifyClose(channelState, signatureCloseA))) {
@@ -294,17 +304,17 @@ const useWeb3 = () => {
                 }
                 console.log("Close In Progress");
 
-                await channels.fromWalletUser.close({
+                let result = await channels.fromWalletProvider.close({
                     ...channelState,
                     hisSignature: signatureCloseA
                 }).send(toNano('0.05'));
-
+                console.log(result);
                 for (let i = 0; i < 100; i++) {
                     await sleep(1000);
                     const data = await channels.channelA.getData();
                     console.log(data);
-                    if (data.state == 1) {
-                        console.log("Close Completed");
+                    if (data.state == 0) {
+                        console.log("Close Operation Completed");
                         break;
                     }
                 }
