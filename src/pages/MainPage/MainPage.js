@@ -1,4 +1,4 @@
-import {Button, IconButton, Modal, Rating, ToggleButton, ToggleButtonGroup} from '@mui/material'
+import {Button, Rating, ToggleButton, ToggleButtonGroup} from '@mui/material'
 import authorProfile from '../../assets/profile-author.jpg'
 import ChatIcon from '@mui/icons-material/Chat';
 import KeyboardVoiceIcon from '@mui/icons-material/KeyboardVoice';
@@ -110,14 +110,15 @@ function MainPage() {
                                           state={{
                                               data: {
                                                   client: {
-                                                      name: "filippo inzaghi",
+                                                      name: "YOU",
                                                       image: authorProfile
                                                   },
                                                   server: {
                                                       fee: selectedFee.fee,
                                                       name: catVal.title,
                                                       image: catVal.image,
-                                                      type : selectedFee.type
+                                                      type : selectedFee.type,
+                                                      mediaSource : (selectedFee.type === video_Type ? catVal.videoUrl : catVal.voiceUrl)
                                                   }
                                               }
                                           }}>

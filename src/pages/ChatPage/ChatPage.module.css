@@ -19,6 +19,25 @@
     justify-content: flex-end;
 }
 
+.mediaPlayerContainer {
+    margin: auto;
+    padding: 20px;
+    border-radius: 20px;
+    display: flex;
+    gap: 8px;
+    flex-direction: row;
+    background-color: #0b5ed7;
+    justify-content: center;
+    align-items: center;
+}
+
+.mediaPlayerVideo {
+    height: 300px;
+}
+
+.mediaPlayerVoice {
+}
+
 .profileWrapper {
     display: flex;
 
@@ -35,10 +54,17 @@
     justify-content: flex-end;
 }
 
-.profile img {
-    max-width: 100%;
-    max-height: 100%;
+.profileInModal {
+    ;
+    border-radius: 50px;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
 }
+
 
 .name {
     display: flex;
@@ -223,4 +249,5 @@
     padding: 20px;
     border-radius: 30px;
     background-color: #ffffff;
+    align-items: center;
 }
